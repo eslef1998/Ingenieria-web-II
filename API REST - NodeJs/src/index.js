@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 
+// Punto de entrada: prepara Express, conecta MongoDB y registra todos los recursos de la API.
 const app = express();
 
 // Conectar a MongoDB
@@ -13,6 +14,7 @@ app.use(cors());
 app.use(express.json());
 
 // Rutas
+// Cada prefijo agrupa los endpoints de una entidad y mantiene separado el código de negocio.
 app.use('/api/generos', require('./routes/generoRoutes'));
 app.use('/api/directores', require('./routes/directorRoutes'));
 app.use('/api/productoras', require('./routes/productoraRoutes'));

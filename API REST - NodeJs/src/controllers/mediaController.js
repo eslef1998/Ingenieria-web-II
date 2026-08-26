@@ -4,6 +4,7 @@ const Director = require('../models/Director');
 const Productora = require('../models/Productora');
 const Tipo = require('../models/Tipo');
 
+// Devuelve las producciones con sus entidades relacionadas para evitar respuestas llenas de solo ObjectId.
 exports.getMedias = async (req, res) => {
   try {
     const medias = await Media.find()
@@ -17,6 +18,7 @@ exports.getMedias = async (req, res) => {
   }
 };
 
+// Antes de guardar, verifica que género, director, productora y tipo sean referencias válidas.
 exports.createMedia = async (req, res) => {
   try {
     const { genero, director, productora, tipo } = req.body;
@@ -49,6 +51,7 @@ exports.createMedia = async (req, res) => {
   }
 };
 
+// Reemplaza los datos enviados de una producción y devuelve el resultado actualizado.
 exports.updateMedia = async (req, res) => {
   try {
     const media = await Media.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -58,6 +61,7 @@ exports.updateMedia = async (req, res) => {
   }
 };
 
+// Elimina la producción seleccionada usando el id recibido en la ruta.
 exports.deleteMedia = async (req, res) => {
   try {
     await Media.findByIdAndDelete(req.params.id);
