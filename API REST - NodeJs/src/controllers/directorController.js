@@ -1,38 +1,35 @@
-const Director = require('../models/Director');
+const { Router } = require('express');
+const Director = require('../models/Director'); // Reemplaza con la ruta a tu modelo Director
+const router = Router();
 
-// Estos métodos reciben la petición HTTP y son el puente entre las rutas y MongoDB.
-// 1. Revisa qué nombre tiene tu función de crear (ejemplo: createDirector o crearDirector)
-// Este método está reservado para recibir los datos y crear un director en el catálogo.
-const createDirector = async (req, res) => {
-  // ... tu código de creación existente ...
-};
-
-// 2. Revisa el nombre de tu función de listar
-// Este método está reservado para consultar y devolver los directores registrados.
-const getDirectores = async (req, res) => {
-  // ... tu código de lectura existente ...
-};
-
-// 3. Función de actualización PUT
-// Busca el director por su identificador y devuelve la versión actualizada al cliente.
-const updateDirector = async (req, res) => {
+// GET: Listar directores
+router.get('/', async (req, res) => {
   try {
-    const { id } = req.params;
-    const director = await Director.findByIdAndUpdate(
-      id,
-      { ...req.body, fechaActualizacion: new Date() },
-      { new: true }
-    );
-    if (!director) return res.status(404).json({ mensaje: "Director no encontrado" });
-    res.status(200).json(director);
+    const directores = await Director.find();
+    return res.json(directores);
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al actualizar director", error });
+    return res.status(500).json({ msg: 'Error al obtener directores', error: error.message });
   }
-};
+});
 
-// 4. Exporta usando EXACTAMENTE los mismos nombres declarados arriba
-module.exports = {
-  createDirector,
-  getDirectores,
-  updateDirector
-};
+// POST: Guardar director
+router.post('/', async (req, res) => {
+  try {
+    const { nombres, nombre, estado } = req.body;
+    
+    const director = new Director({
+      nombres: nombres || nombre,
+      estado: estado || 'Activo',
+      fechaCreacion: new Date(),
+      fechaActualizacion: new Date()
+    });
+
+    await director.save();
+    return res.status(201).json(director); // <-- ESTA LÍNEA ES CLAVE (Libera el 'await' del frontend)
+  } catch (error) {
+    console.error(error);
+    return res.status(400).json({ msg: 'Error al crear director', error: error.message });
+  }
+});
+
+module.exports = router;

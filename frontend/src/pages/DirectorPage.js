@@ -8,62 +8,102 @@ export const DirectorPage = () => {
 
   const fetchDirectores = async () => {
     try {
-      const res = await API.get('/director');
+      const res = await API.get('/directores');
       setDirectores(res.data);
     } catch (err) {
-      console.error(err);
+      console.error('Error al cargar directores:', err);
     }
   };
 
-  useEffect(() => { fetchDirectores(); }, []);
+  useEffect(() => { 
+    fetchDirectores(); 
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('--- Enviando petición al servidor ---');
+
     try {
-      await API.post('/director', { nombre, estado });
+      const res = await API.post('/directores', { 
+        nombres: nombre, 
+        estado: estado 
+      });
+      
+      console.log('Respuesta del servidor:', res.data);
+      alert('¡Director guardado con éxito!');
       setNombre('');
       fetchDirectores();
     } catch (err) {
-      console.error(err);
+      console.error('Error backend:', err);
+      const errorMsg = err.response?.data?.msg || err.response?.data?.message || err.message;
+      alert(`Error al guardar: ${errorMsg}`);
     }
   };
 
   return (
-    <div className="container mt-4 text-white">
-      <h2>Gestión de Directores</h2>
-      <form onSubmit={handleSubmit} className="bg-secondary p-3 rounded mb-4">
-        <div className="row g-3">
-          <div className="col-md-6">
-            <label className="form-label">Nombre</label>
-            <input type="text" className="form-control" value={nombre} onChange={e => setNombre(e.target.value)} required />
-          </div>
-          <div className="col-md-6">
-            <label className="form-label">Estado</label>
-            <select className="form-select" value={estado} onChange={e => setEstado(e.target.value)}>
-              <option value="Activo">Activo</option>
-              <option value="Inactivo">Inactivo</option>
-            </select>
-          </div>
+    <div className="container text-light">
+      <div className="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-2">
+        <div>
+          <h3 className="fw-bold mb-0">Gestión de Directores</h3>
+          <small className="text-white-50">Administración de Directores de Cine/Series</small>
         </div>
-        <button type="submit" className="btn btn-primary px-4 fw-semibold">Guardar Director</button>
-      </form>
+      </div>
 
-      <table className="table table-dark table-striped">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-        <tbody>
-          {directores.map(d => (
-            <tr key={d._id}>
-              <td>{d.nombre}</td>
-              <td><span className={`badge ${d.estado === 'Activo' ? 'bg-success' : 'bg-danger'}`}>{d.estado}</span></td>
+      <div className="bg-dark p-4 rounded-3 border border-secondary mb-5 shadow">
+        <form onSubmit={handleSubmit}>
+          <div className="row g-3">
+            <div className="col-md-6">
+              <label className="form-label text-white-50">Nombres y Apellidos</label>
+              <input 
+                type="text" 
+                className="form-control bg-secondary text-white border-0" 
+                value={nombre} 
+                onChange={e => setNombre(e.target.value)} 
+                placeholder="Ej: Christopher Nolan"
+                required 
+              />
+            </div>
+            <div className="col-md-6">
+              <label className="form-label text-white-50">Estado</label>
+              <select 
+                className="form-select bg-secondary text-white border-0" 
+                value={estado} 
+                onChange={e => setEstado(e.target.value)}
+              >
+                <option value="Activo">Activo</option>
+                <option value="Inactivo">Inactivo</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" className="btn btn-primary px-4 mt-4 fw-semibold">
+            Guardar Director
+          </button>
+        </form>
+      </div>
+
+      <h5 className="text-light mb-3 fw-semibold">Directores Registrados</h5>
+      <div className="table-responsive">
+        <table className="table table-dark table-striped align-middle border-secondary">
+          <thead>
+            <tr>
+              <th>Nombres</th>
+              <th>Estado</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {directores.map((d, index) => (
+              <tr key={d._id || index}>
+                <td className="fw-semibold">{d.nombres || d.nombre}</td>
+                <td>
+                  <span className={`badge ${d.estado === 'Activo' ? 'bg-success' : 'bg-danger'}`}>
+                    {d.estado}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

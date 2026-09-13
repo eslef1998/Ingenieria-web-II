@@ -1,13 +1,12 @@
 const mongoose = require('mongoose');
 
-// Centraliza la conexión para que el arranque de la API no repita esta configuración.
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log('MongoDB conectado exitosamente');
+    const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/iud_media';
+    const conn = await mongoose.connect(mongoURI);
+    console.log(`MongoDB Conectado en: ${conn.connection.host}`);
   } catch (error) {
-    // Si la base de datos no responde, la API se detiene porque no puede trabajar correctamente.
-    console.error('Error al conectar MongoDB:', error.message);
+    console.error(`Error al conectar MongoDB: ${error.message}`);
     process.exit(1);
   }
 };
