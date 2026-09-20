@@ -10,7 +10,6 @@ La aplicación se encuentra desplegada bajo una arquitectura cliente-servidor fu
 
 * **Aplicación Cliente (Frontend SPA):** https://loquacious-sfogliatella-5da74f.netlify.app
 * **API RESTful (Backend):** https://ingenieria-web-ii.onrender.com
-* **Base de Datos:** Clúster NoSQL en MongoDB Atlas
 
 ## Módulos del Sistema
 El proyecto cuenta con 5 módulos core (CRUD) completamente funcionales e integrados:
