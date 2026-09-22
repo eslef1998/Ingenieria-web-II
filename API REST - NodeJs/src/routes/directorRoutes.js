@@ -30,4 +30,28 @@ router.post('/', async (req, res) => {
   }
 });
 
+router.put('/:id', async (req, res) => {
+  try {
+    const { nombres, nombre, estado } = req.body;
+    const director = await Director.findByIdAndUpdate(
+      req.params.id,
+      { nombres: nombres || nombre, estado },
+      { new: true, runValidators: true }
+    );
+    if (!director) return res.status(404).json({ mensaje: 'Director no encontrado' });
+    return res.json(director);
+  } catch (error) {
+    return res.status(400).json({ mensaje: 'Error al actualizar director', error: error.message });
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    await Director.findByIdAndDelete(req.params.id);
+    return res.json({ mensaje: 'Director eliminado correctamente' });
+  } catch (error) {
+    return res.status(400).json({ mensaje: 'Error al eliminar director', error: error.message });
+  }
+});
+
 module.exports = router;

@@ -49,9 +49,13 @@ git clone [https://github.com/eslef1998/Ingenieria-web-II.git](https://github.co
 npm install
 
 3. Configurar variables de entorno:
-# Crear un archivo .env en la raíz del proyecto y agregar:
+# Crear un archivo .env en API REST - NodeJs y agregar:
 PORT=4000
 MONGO_URI=tu_cadena_de_conexion_a_mongodb_atlas
+
+# Para el frontend local, opcionalmente crear frontend/.env:
+REACT_APP_API_URL=http://localhost:4000/api
+# En Netlify, configurar REACT_APP_API_URL con la URL pública de Render.
 
 4. Iniciar el servidor:
 npm run dev

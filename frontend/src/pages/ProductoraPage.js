@@ -7,13 +7,14 @@ export const ProductoraPage = () => {
   const [slogan, setSlogan] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [estado, setEstado] = useState('Activo');
+  const [editingId, setEditingId] = useState(null);
 
   const fetchProductoras = async () => {
     try {
-      const res = await API.get('/productora');
+      const res = await API.get('/productoras');
       setProductoras(res.data);
     } catch (err) {
-      console.error(err);
+      console.error('Error al cargar productoras:', err);
     }
   };
 
@@ -22,11 +23,46 @@ export const ProductoraPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await API.post('/productora', { nombre, slogan, descripcion, estado });
+      const payload = { nombre, slogan, descripcion, estado };
+      if (editingId) {
+        await API.put(`/productoras/${editingId}`, payload);
+      } else {
+        await API.post('/productoras', payload);
+      }
       setNombre(''); setSlogan(''); setDescripcion('');
+      setEstado('Activo');
+      setEditingId(null);
       fetchProductoras();
+      alert(editingId ? 'Productora actualizada con éxito' : 'Productora registrada con éxito');
     } catch (err) {
-      console.error(err);
+      console.error('Error al guardar productora:', err);
+      alert(`Error al guardar: ${err.response?.data?.mensaje || err.response?.data?.msg || err.message}`);
+    }
+  };
+
+  const handleEdit = (productora) => {
+    setEditingId(productora._id);
+    setNombre(productora.nombre);
+    setSlogan(productora.slogan || '');
+    setDescripcion(productora.descripcion || '');
+    setEstado(productora.estado || 'Activo');
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setNombre('');
+    setSlogan('');
+    setDescripcion('');
+    setEstado('Activo');
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('¿Deseas eliminar esta productora?')) return;
+    try {
+      await API.delete(`/productoras/${id}`);
+      setProductoras(productoras.filter(productora => productora._id !== id));
+    } catch (err) {
+      alert(`Error al eliminar: ${err.response?.data?.mensaje || err.message}`);
     }
   };
 
@@ -55,7 +91,8 @@ export const ProductoraPage = () => {
             </select>
           </div>
         </div>
-        <button type="submit" className="btn btn-primary px-4 fw-semibold">Guardar Productora</button>
+        <button type="submit" className="btn btn-primary px-4 fw-semibold">{editingId ? 'Actualizar Productora' : 'Guardar Productora'}</button>
+        {editingId && <button type="button" className="btn btn-outline-light px-4 ms-2" onClick={cancelEdit}>Cancelar</button>}
       </form>
 
       <table className="table table-dark table-striped">
@@ -64,6 +101,7 @@ export const ProductoraPage = () => {
             <th>Nombre</th>
             <th>Slogan</th>
             <th>Estado</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -72,6 +110,10 @@ export const ProductoraPage = () => {
               <td>{p.nombre}</td>
               <td>{p.slogan}</td>
               <td><span className={`badge ${p.estado === 'Activo' ? 'bg-success' : 'bg-danger'}`}>{p.estado}</span></td>
+              <td className="d-flex gap-2">
+                <button type="button" className="btn btn-sm btn-outline-info" onClick={() => handleEdit(p)}>Editar</button>
+                <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(p._id)}>Eliminar</button>
+              </td>
             </tr>
           ))}
         </tbody>

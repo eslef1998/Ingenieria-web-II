@@ -20,3 +20,22 @@ exports.createTipo = async (req, res) => {
     res.status(400).json({ mensaje: 'Error al crear tipo', error: error.message });
   }
 };
+
+exports.updateTipo = async (req, res) => {
+  try {
+    const tipo = await Tipo.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    if (!tipo) return res.status(404).json({ mensaje: 'Tipo no encontrado' });
+    res.json(tipo);
+  } catch (error) {
+    res.status(400).json({ mensaje: 'Error al actualizar tipo', error: error.message });
+  }
+};
+
+exports.deleteTipo = async (req, res) => {
+  try {
+    await Tipo.findByIdAndDelete(req.params.id);
+    res.json({ mensaje: 'Tipo eliminado correctamente' });
+  } catch (error) {
+    res.status(400).json({ mensaje: 'Error al eliminar tipo' });
+  }
+};

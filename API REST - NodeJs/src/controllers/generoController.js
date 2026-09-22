@@ -30,3 +30,12 @@ exports.updateGenero = async (req, res) => {
     res.status(400).json({ mensaje: 'Error al actualizar género' });
   }
 };
+
+exports.deleteGenero = async (req, res) => {
+  try {
+    await Genero.findByIdAndDelete(req.params.id);
+    res.json({ mensaje: 'Género eliminado correctamente' });
+  } catch (error) {
+    res.status(400).json({ mensaje: 'Error al eliminar género' });
+  }
+};

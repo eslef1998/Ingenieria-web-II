@@ -7,10 +7,11 @@ export const TipoPage = () => {
     nombre: '',
     descripcion: ''
   });
+  const [editingId, setEditingId] = useState(null);
 
   const fetchTipos = async () => {
     try {
-      const res = await API.get('/tipo');
+      const res = await API.get('/tipos');
       setTipos(res.data);
     } catch (err) {
       console.error('Error al obtener los tipos:', err);
@@ -28,13 +29,38 @@ export const TipoPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await API.post('/tipo', formData);
+      if (editingId) {
+        await API.put(`/tipos/${editingId}`, formData);
+      } else {
+        await API.post('/tipos', formData);
+      }
       setFormData({ nombre: '', descripcion: '' });
+      setEditingId(null);
       fetchTipos();
-      alert('Tipo registrado con éxito');
+      alert(editingId ? 'Tipo actualizado con éxito' : 'Tipo registrado con éxito');
     } catch (err) {
       console.error('Error al guardar el tipo:', err);
-      alert('Error al registrar el tipo');
+      alert(`Error al registrar el tipo: ${err.response?.data?.mensaje || err.message}`);
+    }
+  };
+
+  const handleEdit = (tipo) => {
+    setEditingId(tipo._id);
+    setFormData({ nombre: tipo.nombre, descripcion: tipo.descripcion || '' });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setFormData({ nombre: '', descripcion: '' });
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('¿Deseas eliminar este tipo?')) return;
+    try {
+      await API.delete(`/tipos/${id}`);
+      setTipos(tipos.filter(tipo => tipo._id !== id));
+    } catch (err) {
+      alert(`Error al eliminar: ${err.response?.data?.mensaje || err.message}`);
     }
   };
 
@@ -47,7 +73,7 @@ export const TipoPage = () => {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-dark p-4 rounded-3 border border-secondary mb-5 shadow">
+      <form onSubmit={handleSubmit} className="bg-secondary p-4 rounded-3 border border-secondary mb-5 shadow">
         <div className="row g-3">
           <div className="col-md-5">
             <label className="form-label text-white-50">Nombre</label>
@@ -55,7 +81,7 @@ export const TipoPage = () => {
               type="text"
               name="nombre"
               value={formData.nombre}
-              className="form-control bg-secondary text-white border-0"
+              className="form-control"
               onChange={handleChange}
               required
             />
@@ -67,7 +93,7 @@ export const TipoPage = () => {
               type="text"
               name="descripcion"
               value={formData.descripcion}
-              className="form-control bg-secondary text-white border-0"
+              className="form-control"
               onChange={handleChange}
               required
             />
@@ -75,8 +101,9 @@ export const TipoPage = () => {
         </div>
 
         <button type="submit" className="btn btn-primary px-4 mt-4 fw-semibold">
-          Guardar Tipo
+          {editingId ? 'Actualizar Tipo' : 'Guardar Tipo'}
         </button>
+        {editingId && <button type="button" className="btn btn-outline-light px-4 mt-4 ms-2" onClick={cancelEdit}>Cancelar</button>}
       </form>
 
       <h5 className="text-light mb-3 fw-semibold">Tipos Registrados</h5>
@@ -86,6 +113,7 @@ export const TipoPage = () => {
             <tr>
               <th>Nombre</th>
               <th>Descripción</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -93,6 +121,10 @@ export const TipoPage = () => {
               <tr key={t._id}>
                 <td className="fw-semibold">{t.nombre}</td>
                 <td className="text-white-50">{t.descripcion}</td>
+                <td className="d-flex gap-2">
+                  <button type="button" className="btn btn-sm btn-outline-info" onClick={() => handleEdit(t)}>Editar</button>
+                  <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(t._id)}>Eliminar</button>
+                </td>
               </tr>
             ))}
           </tbody>

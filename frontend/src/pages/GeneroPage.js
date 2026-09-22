@@ -6,6 +6,7 @@ export const GeneroPage = () => {
   const [nombre, setNombre] = useState('');
   const [estado, setEstado] = useState('Activo');
   const [descripcion, setDescripcion] = useState('');
+  const [editingId, setEditingId] = useState(null);
 
   const fetchGeneros = async () => {
     try {
@@ -23,14 +24,45 @@ export const GeneroPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await API.post('/generos', { nombre, estado, descripcion }); // Nota el plural '/generos'
-      alert('¡Género guardado con éxito!');
+      const payload = { nombre, estado, descripcion };
+      if (editingId) {
+        await API.put(`/generos/${editingId}`, payload);
+      } else {
+        await API.post('/generos', payload);
+      }
+      alert(editingId ? '¡Género actualizado con éxito!' : '¡Género guardado con éxito!');
       setNombre(''); 
+      setEstado('Activo');
       setDescripcion('');
+      setEditingId(null);
       fetchGeneros();
     } catch (err) {
       console.error('Error al guardar género:', err);
       alert(`Error al guardar: ${err.response?.data?.msg || err.message}`);
+    }
+  };
+
+  const handleEdit = (genero) => {
+    setEditingId(genero._id);
+    setNombre(genero.nombre);
+    setEstado(genero.estado);
+    setDescripcion(genero.descripcion || '');
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setNombre('');
+    setEstado('Activo');
+    setDescripcion('');
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('¿Deseas eliminar este género?')) return;
+    try {
+      await API.delete(`/generos/${id}`);
+      setGeneros(generos.filter(genero => genero._id !== id));
+    } catch (err) {
+      alert(`Error al eliminar: ${err.response?.data?.mensaje || err.message}`);
     }
   };
 
@@ -43,13 +75,13 @@ export const GeneroPage = () => {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-dark p-4 rounded-3 border border-secondary mb-5 shadow">
+      <form onSubmit={handleSubmit} className="bg-secondary p-4 rounded-3 border border-secondary mb-5 shadow">
         <div className="row g-3">
           <div className="col-md-4">
             <label className="form-label text-white-50">Nombre</label>
             <input 
               type="text" 
-              className="form-control bg-secondary text-white border-0" 
+              className="form-control"
               value={nombre} 
               onChange={e => setNombre(e.target.value)} 
               required 
@@ -58,7 +90,7 @@ export const GeneroPage = () => {
           <div className="col-md-4">
             <label className="form-label text-white-50">Estado</label>
             <select 
-              className="form-select bg-secondary text-white border-0" 
+              className="form-select"
               value={estado} 
               onChange={e => setEstado(e.target.value)}
             >
@@ -70,7 +102,7 @@ export const GeneroPage = () => {
             <label className="form-label text-white-50">Descripción</label>
             <input 
               type="text" 
-              className="form-control bg-secondary text-white border-0" 
+              className="form-control"
               value={descripcion} 
               onChange={e => setDescripcion(e.target.value)} 
               required
@@ -78,8 +110,9 @@ export const GeneroPage = () => {
           </div>
         </div>
         <button type="submit" className="btn btn-primary px-4 mt-4 fw-semibold">
-          Guardar Género
+          {editingId ? 'Actualizar Género' : 'Guardar Género'}
         </button>
+        {editingId && <button type="button" className="btn btn-outline-light px-4 mt-4 ms-2" onClick={cancelEdit}>Cancelar</button>}
       </form>
 
       <h5 className="text-light mb-3 fw-semibold">Géneros Registrados</h5>
@@ -90,6 +123,7 @@ export const GeneroPage = () => {
               <th>Nombre</th>
               <th>Estado</th>
               <th>Descripción</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -102,6 +136,10 @@ export const GeneroPage = () => {
                   </span>
                 </td>
                 <td className="text-white-50">{g.descripcion}</td>
+                <td className="d-flex gap-2">
+                  <button type="button" className="btn btn-sm btn-outline-info" onClick={() => handleEdit(g)}>Editar</button>
+                  <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(g._id)}>Eliminar</button>
+                </td>
               </tr>
             ))}
           </tbody>

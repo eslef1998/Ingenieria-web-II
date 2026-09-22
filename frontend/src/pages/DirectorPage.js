@@ -5,6 +5,7 @@ export const DirectorPage = () => {
   const [directores, setDirectores] = useState([]);
   const [nombre, setNombre] = useState('');
   const [estado, setEstado] = useState('Activo');
+  const [editingId, setEditingId] = useState(null);
 
   const fetchDirectores = async () => {
     try {
@@ -24,19 +25,46 @@ export const DirectorPage = () => {
     console.log('--- Enviando petición al servidor ---');
 
     try {
-      const res = await API.post('/directores', { 
+      const payload = {
         nombres: nombre, 
         estado: estado 
-      });
+      };
+      const res = editingId
+        ? await API.put(`/directores/${editingId}`, payload)
+        : await API.post('/directores', payload);
       
       console.log('Respuesta del servidor:', res.data);
-      alert('¡Director guardado con éxito!');
+      alert(editingId ? '¡Director actualizado con éxito!' : '¡Director guardado con éxito!');
       setNombre('');
+      setEstado('Activo');
+      setEditingId(null);
       fetchDirectores();
     } catch (err) {
       console.error('Error backend:', err);
       const errorMsg = err.response?.data?.msg || err.response?.data?.message || err.message;
       alert(`Error al guardar: ${errorMsg}`);
+    }
+  };
+
+  const handleEdit = (director) => {
+    setEditingId(director._id);
+    setNombre(director.nombres || director.nombre);
+    setEstado(director.estado || 'Activo');
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setNombre('');
+    setEstado('Activo');
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('¿Deseas eliminar este director?')) return;
+    try {
+      await API.delete(`/directores/${id}`);
+      setDirectores(directores.filter(director => director._id !== id));
+    } catch (err) {
+      alert(`Error al eliminar: ${err.response?.data?.mensaje || err.message}`);
     }
   };
 
@@ -49,14 +77,14 @@ export const DirectorPage = () => {
         </div>
       </div>
 
-      <div className="bg-dark p-4 rounded-3 border border-secondary mb-5 shadow">
+      <div className="bg-secondary p-4 rounded-3 border border-secondary mb-5 shadow">
         <form onSubmit={handleSubmit}>
           <div className="row g-3">
             <div className="col-md-6">
               <label className="form-label text-white-50">Nombres y Apellidos</label>
               <input 
                 type="text" 
-                className="form-control bg-secondary text-white border-0" 
+                className="form-control"
                 value={nombre} 
                 onChange={e => setNombre(e.target.value)} 
                 placeholder="Ej: Christopher Nolan"
@@ -66,7 +94,7 @@ export const DirectorPage = () => {
             <div className="col-md-6">
               <label className="form-label text-white-50">Estado</label>
               <select 
-                className="form-select bg-secondary text-white border-0" 
+                className="form-select"
                 value={estado} 
                 onChange={e => setEstado(e.target.value)}
               >
@@ -76,8 +104,9 @@ export const DirectorPage = () => {
             </div>
           </div>
           <button type="submit" className="btn btn-primary px-4 mt-4 fw-semibold">
-            Guardar Director
+            {editingId ? 'Actualizar Director' : 'Guardar Director'}
           </button>
+          {editingId && <button type="button" className="btn btn-outline-light px-4 mt-4 ms-2" onClick={cancelEdit}>Cancelar</button>}
         </form>
       </div>
 
@@ -88,6 +117,7 @@ export const DirectorPage = () => {
             <tr>
               <th>Nombres</th>
               <th>Estado</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -98,6 +128,10 @@ export const DirectorPage = () => {
                   <span className={`badge ${d.estado === 'Activo' ? 'bg-success' : 'bg-danger'}`}>
                     {d.estado}
                   </span>
+                </td>
+                <td className="d-flex gap-2">
+                  <button type="button" className="btn btn-sm btn-outline-info" onClick={() => handleEdit(d)}>Editar</button>
+                  <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(d._id)}>Eliminar</button>
                 </td>
               </tr>
             ))}
