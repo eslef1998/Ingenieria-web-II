@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import API from '../services/api';
 
 export const MediaPage = () => {
@@ -7,6 +7,7 @@ export const MediaPage = () => {
   const [directores, setDirectores] = useState([]);
   const [productoras, setProductoras] = useState([]);
   const [tipos, setTipos] = useState([]);
+  const formRef = useRef(null);
 
   const [formData, setFormData] = useState({
     serial: '', titulo: '', sinopsis: '', url: '', foto: '',
@@ -100,6 +101,9 @@ export const MediaPage = () => {
       productora: media.productora?._id || media.productora || '',
       tipo: media.tipo?._id || media.tipo || ''
     });
+    requestAnimationFrame(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   };
 
   const cancelEdit = () => {
@@ -130,7 +134,7 @@ export const MediaPage = () => {
         <span className="badge bg-primary px-3 py-2">Módulo Activo</span>
       </div>
       
-      <form onSubmit={handleSubmit} className="bg-secondary p-4 rounded-3 border border-secondary mb-5 shadow">
+      <form ref={formRef} onSubmit={handleSubmit} className="bg-secondary p-4 rounded-3 border border-secondary mb-5 shadow">
         <h5 className="text-primary mb-3 fw-semibold">Registrar Nuevo Contenido</h5>
         <div className="row g-3">
           <div className="col-md-3">
